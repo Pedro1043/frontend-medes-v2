@@ -1,34 +1,55 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/Login/login';
+import PatientRegister from './pages/Patients/PatientRegister';
+import MedicalData from './pages/MedicalData/MedicalData';
+import HistoryViewer from './pages/MedicalHistory/HistoryViewer';
+import ProtectedRoute from './components/shared/ProtectedRoute';
+import Navbar from './components/shared/Navbar/Navbar';
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <BrowserRouter>
+     <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Navbar />
+            <h1>Bienvenido a la aplicación</h1>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/patientRegister"
+        element={
+          <ProtectedRoute>
+            <Navbar />
+            <PatientRegister />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/MedicalData"
+        element={
+          <ProtectedRoute>
+            <Navbar />
+            <MedicalData />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/HistoryViewer"
+        element={
+          <ProtectedRoute>
+            <Navbar />
+            <HistoryViewer />
+          </ProtectedRoute>
+        }
+      />
+     </Routes>
+    </BrowserRouter>
   )
 }
 
