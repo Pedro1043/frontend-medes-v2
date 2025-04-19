@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { registerPatientService } from '../../services/patients';
 
-const PatientRegister= () => {
+const PatientRegister = () => {
   const [dni, setDNI] = useState('');
   const [name, setName] = useState('');
   const [apellidoP, setApellidoP] = useState('');
@@ -14,32 +15,54 @@ const PatientRegister= () => {
   const [email, setEmail] = useState('');
   const [antecedentes, setAntecedentes] = useState('');
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage(''); // Limpiar mensajes previos
+    setError(''); // Limpiar errores previos
 
     if ( !dni|| !name || !apellidoP || !apellidoM|| !fecnacimiento  || !age || !gender || !estcivil || !direccion || !phone || !email || !antecedentes) {
-      setMessage('Por favor, complete todos los campos.');
+      setError('Por favor, complete todos los campos.');
       return;
     }
 
-    // Aquí agregarías la lógica para enviar los datos a una API o guardarlos en una base de datos
-    console.log('Datos del paciente:', { dni, name,apellidoP, apellidoM, fecnacimiento, age, gender, estcivil, direccion, phone, email, antecedentes });
-    setMessage('¡Registro completado con éxito!');
-    
-    // Limpiar el formulario después de guardar los datos
-    setDNI('');
-    setName('');
-    setApellidoP('');
-    setApellidoM('');
-    setFecnacimiento('');
-    setAge('');
-    setGender('');
-    setEstcivil('');
-    setDireccion('');
-    setPhone('');
-    setEmail('');
-    setAntecedentes('');
+    //Crear el objeto con los datos del paciente
+    const patientData = {
+      dniPaciente: dni,
+      nombresPaciente: name,
+      apellidoPaterno: apellidoP,
+      apellidoMaterno: apellidoM,
+      fechaNacimientoPaciente: fecnacimiento,
+      sexoPaciente: gender,
+      edadPaciente: parseInt(age, 10), // Convertir a número
+      estadoCivilPaciente: estcivil,
+      direccionPaciente: direccion,
+      celularPaciente: phone,
+      emailPaciente: email,
+      antecedenteFamiliarPaciente: antecedentes,
+    };
+
+    try {
+      const result = await registerPatientService(patientData);
+      console.log('Paciente registrado:', result);
+      setMessage('Paciente registrado exitosamente!'); // Mensaje de éxito
+      // Limpiar el formulario después de guardar los datos
+      setDNI('');
+      setName('');
+      setApellidoP('');
+      setApellidoM('');
+      setFecnacimiento('');
+      setAge('');
+      setGender('');
+      setEstcivil('');
+      setDireccion('');
+      setPhone('');
+      setEmail('');
+      setAntecedentes('');
+    } catch (error) {
+      setError('Error al registrar el paciente. Inténtelo de nuevo.')
+    }
   };
 
   return (
@@ -169,6 +192,7 @@ const PatientRegister= () => {
             onChange={(e) => setAntecedentes(e.target.value)}
           ></textarea>
         </div>
+        {error && <div className="error">{error}</div>}
         {message && <div className="message">{message}</div>}
         <button type="submit" className="submit-button">Registrar Paciente</button>
       </form>
