@@ -7,9 +7,9 @@ export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
 
-  const login = async (username) => {
+  const login = async (username, password) => {
     try {
-      const userData = await loginService(username);
+      const userData = await loginService(username, password);
       setUser(userData);
       setIsLoggedIn(true);
       localStorage.setItem('user', JSON.stringify(userData)); // Persistencia

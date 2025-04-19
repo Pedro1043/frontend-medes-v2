@@ -12,11 +12,13 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null); // Limpiar errores previos
+
     try {
-      await login(username);
+      await login(username, password); // Pasar username y password al contexto
       navigate('/'); // Redirige a la página principal
     } catch (err) {
-      setError('Usuario no encontrado');
+      setError(err.message); // Mostrar el error
     }
   };
 
