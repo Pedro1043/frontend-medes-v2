@@ -23,7 +23,6 @@ const MedicalData = () => {
       try {
         const patientsData = await getAllPatientsService();
         setPatients(patientsData);
-        setFilteredPatients(patientsData); // Inicialmente, mostrar todos los pacientes
       } catch (error) {
         console.error('Error al obtener pacientes:', error);
       }
@@ -34,6 +33,11 @@ const MedicalData = () => {
 
   // Filtrar pacientes según el valor de búsqueda
   useEffect(() => {
+    if (searchValue.trim() === '') {
+      setFilteredPatients([]); // Si no hay búsqueda, la lista está vacía
+      return;
+    }
+
     const results = patients.filter((patient) =>
       (patient.nombresPaciente?.toLowerCase() || '').includes(searchValue.toLowerCase()) ||
       (patient.apellidoPaterno?.toLowerCase() || '').includes(searchValue.toLowerCase()) ||
@@ -45,6 +49,7 @@ const MedicalData = () => {
   const handlePatientSelect = (patient) => {
     setSelectedPatient(patient);
     setSearchValue(''); // Limpiar la barra de búsqueda
+    setFilteredPatients([]); // Limpiar la lista de pacientes filtrados
   };
 
   const handleSubmit = async (e) => {
