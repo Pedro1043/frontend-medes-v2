@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getAllPatientsService } from '../../services/patients';
+import { registerMedicalDataService } from '../../services/medicalRecords';
 import './MedicalData.css';
 
 const MedicalData = () => {
@@ -14,6 +15,7 @@ const MedicalData = () => {
   const [fc, setFc] = useState('');
   const [temperatura, setTemperatura] = useState('');
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
   // Obtener la lista de pacientes al cargar el componente
   useEffect(() => {
@@ -33,9 +35,9 @@ const MedicalData = () => {
   // Filtrar pacientes según el valor de búsqueda
   useEffect(() => {
     const results = patients.filter((patient) =>
-      patient.nombresPaciente.toLowerCase().includes(searchValue.toLowerCase()) ||
-      patient.apellidoPaterno.toLowerCase().includes(searchValue.toLowerCase()) ||
-      patient.dniPaciente.includes(searchValue)
+      (patient.nombresPaciente?.toLowerCase() || '').includes(searchValue.toLowerCase()) ||
+      (patient.apellidoPaterno?.toLowerCase() || '').includes(searchValue.toLowerCase()) ||
+      (patient.dniPaciente || '').includes(searchValue)
     );
     setFilteredPatients(results);
   }, [searchValue, patients]);
@@ -45,32 +47,45 @@ const MedicalData = () => {
     setSearchValue(''); // Limpiar la barra de búsqueda
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage('');
+    setError('');
 
     if (!selectedPatient || !altura || !peso || !tension || !fr || !fc || !temperatura) {
-      setMessage('Por favor, complete todos los campos.');
+      setError('Por favor, complete todos los campos.');
       return;
     }
 
-    console.log('Datos médicos registrados:', {
-      paciente: selectedPatient,
-      altura,
-      peso,
+    // Crear el objeto con los datos médicos
+    const medicalData = {
+      fecha: new Date().toISOString().split('T')[0], // Fecha actual en formato YYYY-MM-DD
+      altura: parseFloat(altura),
+      peso: parseFloat(peso),
       tension,
-      fr,
-      fc,
-      temperatura,
-    });
+      frecuenciaRespiratoria: parseInt(fr, 10),
+      frecuenciaCardiaca: parseInt(fc, 10),
+      temperatura: parseFloat(temperatura),
+      patient: {
+        idPaciente: selectedPatient.idPaciente,
+      },
+    };
 
-    setMessage('¡Registro completado con éxito!');
-    setSelectedPatient(null);
-    setAltura('');
-    setPeso('');
-    setTension('');
-    setFr('');
-    setFc('');
-    setTemperatura('');
+    try {
+      const result = await registerMedicalDataService(medicalData);
+      console.log('Datos médicos registrados:', result);
+      setMessage('¡Datos médicos registrados con éxito!');
+      // Limpiar el formulario
+      setSelectedPatient(null);
+      setAltura('');
+      setPeso('');
+      setTension('');
+      setFr('');
+      setFc('');
+      setTemperatura('');
+    } catch (error) {
+      setError('Error al registrar los datos médicos. Inténtelo de nuevo.');
+    }
   };
 
   return (
@@ -177,6 +192,7 @@ const MedicalData = () => {
           />
         </div>
 
+        {error && <div className="error">{error}</div>}
         {message && <div className="message">{message}</div>}
         <button type="submit" className="submit-button">
           Registrar Datos Médicos
