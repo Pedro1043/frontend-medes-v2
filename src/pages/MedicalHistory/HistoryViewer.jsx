@@ -1,81 +1,140 @@
-import React, { useState } from 'react';
-
-// Lista simulada de pacientes para hacer la búsqueda
-const patients = [
-  { id: 1, dni: '12345678', apellido: 'Gomez', nombre: 'Juan' },
-  { id: 2, dni: '87654321', apellido: 'Gomez', nombre: 'Ana' },
-  { id: 3, dni: '45678912', apellido: 'Ramirez', nombre: 'Luis' },
-];
+import React, { useState, useEffect } from 'react';
+import { getAllPatientsService } from '../../services/patients';
+import { getMedicalDataByPatientIdService } from '../../services/medicalRecords';
+import './HistoryViewer.css';
 
 const HistoryViewer = () => {
-  const [searchType, setSearchType] = useState('dni'); // 'dni' o 'apellido'
-  const [searchValue, setSearchValue] = useState('');
-  const [results, setResults] = useState([]); // Lista de resultados
+  const [patients, setPatients] = useState([]); // Lista de pacientes
+  const [filteredPatients, setFilteredPatients] = useState([]); // Pacientes filtrados
+  const [searchValue, setSearchValue] = useState(''); // Valor de búsqueda
+  const [selectedPatient, setSelectedPatient] = useState(null); // Paciente seleccionado
+  const [medicalData, setMedicalData] = useState(null); // Datos médicos del paciente
+  const [isModalOpen, setIsModalOpen] = useState(false); // Estado del modal
   const [error, setError] = useState('');
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setError(''); // Resetear el mensaje de error
+  // Obtener la lista de pacientes al cargar el componente
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const patientsData = await getAllPatientsService();
+        setPatients(patientsData);
+      } catch (error) {
+        console.error('Error al obtener pacientes:', error);
+      }
+    };
 
-    if (!searchValue) {
-      setError('Por favor, ingrese un valor de búsqueda.');
+    fetchPatients();
+  }, []);
+
+  // Filtrar pacientes según el valor de búsqueda
+  useEffect(() => {
+    if (searchValue.trim() === '') {
+      setFilteredPatients([]); // Si no hay búsqueda, la lista está vacía
       return;
     }
 
-    // Filtrar la lista de pacientes basada en el tipo de búsqueda
-    const filteredPatients = patients.filter((patient) =>
-      searchType === 'dni'
-        ? patient.dni === searchValue
-        : patient.apellido.toLowerCase().includes(searchValue.toLowerCase())
+    const results = patients.filter((patient) =>
+      (patient.nombresPaciente?.toLowerCase() || '').includes(searchValue.toLowerCase()) ||
+      (patient.apellidoPaterno?.toLowerCase() || '').includes(searchValue.toLowerCase()) ||
+      (patient.dniPaciente || '').includes(searchValue)
     );
+    setFilteredPatients(results);
+  }, [searchValue, patients]);
 
-    if (filteredPatients.length === 0) {
-      setError('No se encontraron pacientes con los criterios especificados.');
-    } else {
-      console.log("No se pudo filtrar");
+  const handlePatientSelect = (patient) => {
+    setSelectedPatient(patient);
+    setSearchValue(''); // Limpiar la barra de búsqueda
+    setFilteredPatients([]); // Limpiar la lista de pacientes filtrados
+  };
+
+  const handleSearch = async () => {
+    if (!selectedPatient) {
+      setError('Por favor, seleccione un paciente.');
+      return;
+    }
+
+    try {
+      const data = await getMedicalDataByPatientIdService(selectedPatient.idPaciente);
+      setMedicalData(data);
+      setIsModalOpen(true); // Abrir el modal
+    } catch (error) {
+      setError('Error al obtener los datos médicos del paciente.');
     }
   };
 
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setMedicalData(null);
+  };
+
   return (
-    <div className="search-container">
+    <div className="history-viewer-container">
       <h2>Buscar Paciente</h2>
-      <form onSubmit={handleSearch}>
+      <div>
+        <label htmlFor="search">Buscar Paciente:</label>
+        <input
+          type="text"
+          id="search"
+          placeholder="Buscar por DNI, nombre o apellido"
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+        />
+        {filteredPatients.length > 0 && (
+          <ul className="patient-list">
+            {filteredPatients.map((patient) => (
+              <li
+                key={patient.dniPaciente}
+                onClick={() => handlePatientSelect(patient)}
+                className="patient-item"
+              >
+                {patient.nombresPaciente} {patient.apellidoPaterno} - DNI: {patient.dniPaciente}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {selectedPatient && (
         <div>
-          <label htmlFor="searchType">Buscar por:</label>
-          <select
-            id="searchType"
-            value={searchType}
-            onChange={(e) => setSearchType(e.target.value)}
-          >
-            <option value="dni">DNI</option>
-            <option value="apellido">Apellido</option>
-          </select>
+          <h3>Paciente Seleccionado:</h3>
+          <p>
+            {selectedPatient.nombresPaciente} {selectedPatient.apellidoPaterno} - DNI:{' '}
+            {selectedPatient.dniPaciente}
+          </p>
+          <button onClick={handleSearch}>Buscar</button>
         </div>
-        <div>
-          <label htmlFor="searchValue">Valor de búsqueda:</label>
-          <input
-            type="text"
-            id="searchValue"
-            placeholder={`Ingrese ${searchType}`}
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-          />
-        </div>
-        <button type="submit">Buscar</button>
-      </form>
+      )}
 
       {error && <div className="error">{error}</div>}
 
-      <div className="results">
-        <h3>Resultados de la búsqueda:</h3>
-        <ul>
-          {results.map((patient) => (
-            <li key={patient.id}>
-              {patient.nombre} {patient.apellido} - DNI: {patient.dni}
-            </li>
-          ))}
-        </ul>
-      </div>
+      {isModalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Datos del Paciente</h3>
+            <p><strong>Nombre:</strong> {selectedPatient.nombresPaciente}</p>
+            <p><strong>Apellido:</strong> {selectedPatient.apellidoPaterno}</p>
+            <p><strong>DNI:</strong> {selectedPatient.dniPaciente}</p>
+            <h3>Datos Médicos</h3>
+            {medicalData && medicalData.length > 0 ? (
+              medicalData.map((record, index) => (
+                <div key={index} className="medical-record">
+                 <p><strong>Fecha:</strong> {record.fecha}</p> 
+                 <p><strong>Altura:</strong> {record.altura} m</p>
+                 <p><strong>Peso:</strong> {record.peso} kg</p>
+                 <p><strong>Tensión:</strong> {record.tension}</p>
+                 <p><strong>Frecuencia Respiratoria:</strong> {record.frecuenciaRespiratoria}</p>
+                 <p><strong>Frecuencia Cardiaca:</strong> {record.frecuenciaCardiaca}</p>
+                 <p><strong>Temperatura:</strong> {record.temperatura} °C</p>
+                <hr />
+              </div>  
+              ))
+            ) : (
+              <p>No hay datos médicos disponibles.</p>
+            )}
+            <button onClick={closeModal}>Cerrar</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
