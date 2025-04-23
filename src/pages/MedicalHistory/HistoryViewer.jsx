@@ -87,7 +87,7 @@ const HistoryViewer = () => {
                 onClick={() => handlePatientSelect(patient)}
                 className="patient-item"
               >
-                {patient.nombresPaciente} {patient.apellidoPaterno} - DNI: {patient.dniPaciente}
+                {patient.nombresPaciente} {patient.apellidoPaterno} {patient.apellidoMaterno} - DNI: {patient.dniPaciente}
               </li>
             ))}
           </ul>
@@ -98,7 +98,7 @@ const HistoryViewer = () => {
         <div>
           <h3>Paciente Seleccionado:</h3>
           <p>
-            {selectedPatient.nombresPaciente} {selectedPatient.apellidoPaterno} - DNI:{' '}
+            {selectedPatient.nombresPaciente} {selectedPatient.apellidoPaterno} {selectedPatient.apellidoMaterno} - DNI:{' '}
             {selectedPatient.dniPaciente}
           </p>
           <button onClick={handleSearch}>Buscar</button>
@@ -111,14 +111,13 @@ const HistoryViewer = () => {
         <div className="modal">
           <div className="modal-content">
             <h3>Datos del Paciente</h3>
-            <p><strong>Nombre:</strong> {selectedPatient.nombresPaciente}</p>
-            <p><strong>Apellido:</strong> {selectedPatient.apellidoPaterno}</p>
+            <p><strong>Nombre Completo:</strong> {`${selectedPatient.nombresPaciente} ${selectedPatient.apellidoPaterno} ${selectedPatient.apellidoMaterno}`}</p>
             <p><strong>DNI:</strong> {selectedPatient.dniPaciente}</p>
             <h3>Datos Médicos</h3>
             {medicalData && medicalData.length > 0 ? (
               medicalData.map((record, index) => (
                 <div key={index} className="medical-record">
-                 <p><strong>Fecha:</strong> {record.fecha}</p> 
+                 <p><strong>Fecha:</strong> {record.fecha}</p>
                  <p><strong>Altura:</strong> {record.altura} m</p>
                  <p><strong>Peso:</strong> {record.peso} kg</p>
                  <p><strong>Tensión:</strong> {record.tension}</p>
@@ -126,7 +125,7 @@ const HistoryViewer = () => {
                  <p><strong>Frecuencia Cardiaca:</strong> {record.frecuenciaCardiaca}</p>
                  <p><strong>Temperatura:</strong> {record.temperatura} °C</p>
                 <hr />
-              </div>  
+              </div>
               ))
             ) : (
               <p>No hay datos médicos disponibles.</p>

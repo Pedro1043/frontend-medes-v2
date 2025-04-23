@@ -114,7 +114,7 @@ const MedicalData = () => {
                   onClick={() => handlePatientSelect(patient)}
                   className="patient-item"
                 >
-                  {patient.nombresPaciente} {patient.apellidoPaterno} - DNI: {patient.dniPaciente}
+                  {patient.nombresPaciente} {patient.apellidoPaterno} {patient.apellidoMaterno} - DNI: {patient.dniPaciente}
                 </li>
               ))}
             </ul>
@@ -125,7 +125,7 @@ const MedicalData = () => {
           <div>
             <h3>Paciente Seleccionado:</h3>
             <p>
-              {selectedPatient.nombresPaciente} {selectedPatient.apellidoPaterno} - DNI:{' '}
+              {selectedPatient.nombresPaciente} {selectedPatient.apellidoPaterno} {selectedPatient.apellidoMaterno} - DNI:{' '}
               {selectedPatient.dniPaciente}
             </p>
           </div>
