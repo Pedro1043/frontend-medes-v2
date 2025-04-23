@@ -124,6 +124,10 @@ const HistoryViewer = () => {
                  <p><strong>Frecuencia Respiratoria:</strong> {record.frecuenciaRespiratoria}</p>
                  <p><strong>Frecuencia Cardiaca:</strong> {record.frecuenciaCardiaca}</p>
                  <p><strong>Temperatura:</strong> {record.temperatura} °C</p>
+                 <p><strong>Examen Clínico General:</strong> {record.examenClinicoGeneral}</p>
+                 <p><strong>Tiempo de Enfermedad:</strong> {record.tiempoEnfermedad}</p>
+                 <p><strong>Signos y Síntomas Principales:</strong> {record.signosSintomasPrincipales}</p>
+                 <p><strong>Relato Cronológico:</strong> {record.relatoCronologico}</p>
                 <hr />
               </div>
               ))

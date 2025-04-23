@@ -4,20 +4,23 @@ import { registerMedicalDataService } from '../../services/medicalRecords';
 import './MedicalData.css';
 
 const MedicalData = () => {
-  const [patients, setPatients] = useState([]); // Lista de pacientes
-  const [selectedPatient, setSelectedPatient] = useState(null); // Paciente seleccionado
-  const [searchValue, setSearchValue] = useState(''); // Valor de búsqueda
-  const [filteredPatients, setFilteredPatients] = useState([]); // Pacientes filtrados
+  const [patients, setPatients] = useState([]);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [searchValue, setSearchValue] = useState('');
+  const [filteredPatients, setFilteredPatients] = useState([]);
   const [altura, setAltura] = useState('');
   const [peso, setPeso] = useState('');
   const [tension, setTension] = useState('');
   const [fr, setFr] = useState('');
   const [fc, setFc] = useState('');
   const [temperatura, setTemperatura] = useState('');
+  const [examenClinicoGeneral, setExamenClinicoGeneral] = useState('');
+  const [tiempoEnfermedad, setTiempoEnfermedad] = useState('');
+  const [signosSintomasPrincipales, setSignosSintomasPrincipales] = useState('');
+  const [relatoCronologico, setRelatoCronologico] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  // Obtener la lista de pacientes al cargar el componente
   useEffect(() => {
     const fetchPatients = async () => {
       try {
@@ -31,10 +34,9 @@ const MedicalData = () => {
     fetchPatients();
   }, []);
 
-  // Filtrar pacientes según el valor de búsqueda
   useEffect(() => {
     if (searchValue.trim() === '') {
-      setFilteredPatients([]); // Si no hay búsqueda, la lista está vacía
+      setFilteredPatients([]);
       return;
     }
 
@@ -48,8 +50,8 @@ const MedicalData = () => {
 
   const handlePatientSelect = (patient) => {
     setSelectedPatient(patient);
-    setSearchValue(''); // Limpiar la barra de búsqueda
-    setFilteredPatients([]); // Limpiar la lista de pacientes filtrados
+    setSearchValue('');
+    setFilteredPatients([]);
   };
 
   const handleSubmit = async (e) => {
@@ -57,20 +59,23 @@ const MedicalData = () => {
     setMessage('');
     setError('');
 
-    if (!selectedPatient || !altura || !peso || !tension || !fr || !fc || !temperatura) {
+    if (!selectedPatient || !altura || !peso || !tension || !fr || !fc || !temperatura || !examenClinicoGeneral || !tiempoEnfermedad || !signosSintomasPrincipales || !relatoCronologico) {
       setError('Por favor, complete todos los campos.');
       return;
     }
 
-    // Crear el objeto con los datos médicos
     const medicalData = {
-      fecha: new Date().toISOString().split('T')[0], // Fecha actual en formato YYYY-MM-DD
+      fecha: new Date().toISOString().split('T')[0],
       altura: parseFloat(altura),
       peso: parseFloat(peso),
       tension,
       frecuenciaRespiratoria: parseInt(fr, 10),
       frecuenciaCardiaca: parseInt(fc, 10),
       temperatura: parseFloat(temperatura),
+      examenClinicoGeneral,
+      tiempoEnfermedad,
+      signosSintomasPrincipales,
+      relatoCronologico,
       patient: {
         idPaciente: selectedPatient.idPaciente,
       },
@@ -80,7 +85,6 @@ const MedicalData = () => {
       const result = await registerMedicalDataService(medicalData);
       console.log('Datos médicos registrados:', result);
       setMessage('¡Datos médicos registrados con éxito!');
-      // Limpiar el formulario
       setSelectedPatient(null);
       setAltura('');
       setPeso('');
@@ -88,6 +92,10 @@ const MedicalData = () => {
       setFr('');
       setFc('');
       setTemperatura('');
+      setExamenClinicoGeneral('');
+      setTiempoEnfermedad('');
+      setSignosSintomasPrincipales('');
+      setRelatoCronologico('');
     } catch (error) {
       setError('Error al registrar los datos médicos. Inténtelo de nuevo.');
     }
@@ -195,6 +203,47 @@ const MedicalData = () => {
             value={temperatura}
             onChange={(e) => setTemperatura(e.target.value)}
           />
+        </div>
+
+        <div>
+          <label htmlFor="examenClinicoGeneral">Examen Clínico General:</label>
+          <textarea
+            id="examenClinicoGeneral"
+            placeholder="Describa el examen clínico general"
+            value={examenClinicoGeneral}
+            onChange={(e) => setExamenClinicoGeneral(e.target.value)}
+          ></textarea>
+        </div>
+
+        <div>
+          <label htmlFor="tiempoEnfermedad">Tiempo de Enfermedad:</label>
+          <input
+            type="text"
+            id="tiempoEnfermedad"
+            placeholder="Tiempo de enfermedad"
+            value={tiempoEnfermedad}
+            onChange={(e) => setTiempoEnfermedad(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="signosSintomasPrincipales">Signos y Síntomas Principales:</label>
+          <textarea
+            id="signosSintomasPrincipales"
+            placeholder="Describa los signos y síntomas principales"
+            value={signosSintomasPrincipales}
+            onChange={(e) => setSignosSintomasPrincipales(e.target.value)}
+          ></textarea>
+        </div>
+
+        <div>
+          <label htmlFor="relatoCronologico">Relato Cronológico:</label>
+          <textarea
+            id="relatoCronologico"
+            placeholder="Describa el relato cronológico"
+            value={relatoCronologico}
+            onChange={(e) => setRelatoCronologico(e.target.value)}
+          ></textarea>
         </div>
 
         {error && <div className="error">{error}</div>}
